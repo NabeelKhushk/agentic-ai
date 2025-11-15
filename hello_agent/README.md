@@ -1,217 +1,87 @@
-🤖 Hello Agent — Minimal AI Assistant
+Agent Framework Demo: Gemini via OpenAI API
+This document provides a guide for running a minimal Python example that integrates the Gemini 2.5 Flash model into an agent-based workflow using an OpenAI-compatible API.
 
-Hello Agent is a lightweight AI assistant built using the OpenAI Agents SDK with Google Gemini 2.5 Flash.
-It demonstrates how to create an agent that is helpful, responsive, and easily extensible.
+This approach allows developers to utilize Google's powerful Gemini models within existing agent frameworks and libraries built for the OpenAI ecosystem.
 
-✨ Features
+🚀 Getting Started
+Follow these steps to set up and run the example.
 
-💡 LLM Configuration – Connect to Gemini via OpenAI-compatible API
+Prerequisites
+Python 3.8+
 
-🧠 Agent Setup – Define an agent with custom instructions and personality
+A Gemini API Key.
 
-⚡ Async Execution – Run the agent asynchronously for smooth responses
+Installation
+Install the necessary Python packages using pip:
 
-🔧 Extensibility – Add tools, workflows, or multi-step reasoning easily
+Bash
 
-📝 Clean Outputs – Extract final responses programmatically
+pip install python-dotenv openai [your_agent_framework]
+Note: Replace [your_agent_framework] with the actual package providing Agent, Runner, etc.
 
-Use Case: Build predictable, task-focused AI assistants for real-world automation and experimentation.
+📝 Environment Variables
+Create a file named .env in the project root and set your API key:
 
-📂 Project Structure
-hello_agent/
-│── .venv/                     # Python virtual environment
-│── src/
-│    └── hello_agent/
-│         └── main.py          # Main async agent script
-│── .env                       # Environment variables (not committed)
-│── requirements.txt            # Python dependencies
-└── README.md                  # This file
+# .env file
+GEMINI_API_KEY="your_api_key_here"
+Security Warning: Never commit your .env file or API keys directly to GitHub.
 
-🔧 Installation
-1. Clone the repository
-git clone <repo-url>
-cd hello_agent
+Running the Program
+Save your Python code as main.py and execute the script:
 
-2. Create and activate a virtual environment
-python -m venv .venv
+Bash
 
-# Windows PowerShell
-.venv\Scripts\Activate.ps1
+python main.py
+Expected Output:
 
-# Windows CMD
-.venv\Scripts\activate.bat
+I'm doing great, thank you for asking! How can I help you today?
+🔑 Key Components
+The core integration is achieved by configuring the client to redirect to the Gemini API endpoint.
 
-3. Install dependencies
-pip install -r requirements.txt
-
-🔑 Environment Variables
-
-Create a .env file in the project root:
-
-GEMINI_API_KEY=your_api_key_here
-
-
-Note: Never commit your .env file to GitHub.
-
-⚙️ Key Components
-🔹 1. model_provider
-
-Defines the external LLM provider.
+1. Model Provider (external_client)
+This defines the external LLM provider. We use the standard AsyncOpenAI client but point it to the Gemini gateway URL.
 
 Example:
+
+Python
 
 external_client = AsyncOpenAI(
     api_key=os.getenv("GEMINI_API_KEY"),
     base_url="https://generativelanguage.googleapis.com/v1beta/openai/"
 )
+Supported Providers: Gemini via OpenAI-compatible API.
 
-
-Supported providers:
-
-Gemini via OpenAI-compatible API
-
-OpenAI GPT models
-
-Claude, LiteLLM, or other custom providers
-
-🔹 2. model
-
-Specifies which LLM the agent will use.
+2. Model Definition (llm_model)
+This specifies which Gemini model to use.
 
 Example:
+
+Python
 
 llm_model = OpenAIChatCompletionsModel(
     model="gemini-2.5-flash",
     openai_client=external_client
 )
+3. Agent Instructions
+The Agent is given a defined role and conditional tool use instructions.
 
+Instructions:
 
-Supported models:
+"You are a helpful assistant to answer the questions. But if user asks about weather, use the get_weather tool."
 
-Gemini 2.5 Flash
+💡 Summary of Code Flow
+The Python script executes the workflow in these sequential steps:
 
-GPT-4.1 / GPT-4.1-mini
+Loads environment variables (dotenv).
 
-GPT-o / GPT-o-mini
+Initializes the AsyncOpenAI client pointing to the Gemini base URL.
 
-Any OpenAI-compatible or custom model
+Defines the gemini-2.5-flash model configuration.
 
-🔹 3. instructions
+Sets up the RunConfig.
 
-System-level rules and behavior for the agent.
+Creates the Agent with its defined instructions.
 
-Example:
+Runs the agent using Runner.run with the initial prompt ("Hello, how are you?").
 
-agent = Agent(
-    name="Assistant",
-    instructions="You are a helpful assistant to answer questions."
-)
-
-
-Defines the agent’s personality, tone, and constraints.
-
-🔹 4. run_config
-
-Controls agent execution.
-
-Example:
-
-run_config = RunConfig(
-    model=llm_model,
-    model_provider=external_client,
-    tracing_disabled=True
-)
-
-Setting	Behavior
-model	Specifies the LLM model used
-model_provider	Defines the API client
-tracing_disabled	Disables debug/tracing info
-🔹 5. Async Execution
-
-Example:
-
-result = await Runner.run(agent, "Hello, how are you?", run_config=run_config)
-print(result.output_text)
-
-Feature	Behavior
-Async	Non-blocking execution using await
-Output	result.output_text contains the final message
-Metadata	Full RunResult object available if needed
-🔹 6. tools (optional)
-
-Functions the agent can call.
-
-Example:
-
-tools=[send_email, fetch_inbox]
-
-
-Supported tool types:
-
-Python functions (@function_tool)
-
-API/HTTP calls
-
-Database queries
-
-Local utilities
-
-Multi-agent handoffs
-
-📦 Complete Example
-import asyncio
-import os
-from dotenv import load_dotenv, find_dotenv
-from agents import Agent, AsyncOpenAI, OpenAIChatCompletionsModel, RunConfig, Runner
-
-# Load environment variables
-load_dotenv(find_dotenv())
-
-# LLM Provider
-external_client = AsyncOpenAI(
-    api_key=os.getenv("GEMINI_API_KEY"),
-    base_url="https://generativelanguage.googleapis.com/v1beta/openai/"
-)
-
-# Model
-llm_model = OpenAIChatCompletionsModel(
-    model="gemini-2.5-flash",
-    openai_client=external_client
-)
-
-# Run Configuration
-run_config = RunConfig(
-    model=llm_model,
-    model_provider=external_client,
-    tracing_disabled=True
-)
-
-# Agent
-agent = Agent(
-    name="Assistant",
-    instructions="You are a helpful assistant to answer questions."
-)
-
-# Run Agent
-async def main():
-    result = await Runner.run(agent, "Hello, how are you?", run_config=run_config)
-    print(result.output_text)
-
-asyncio.run(main())
-
-
-Expected output:
-
-Hello! I'm doing well, thank you for asking. How can I help you today?
-
-🧠 Key Learnings
-Concept	Outcome
-External model integration	Gemini via OpenAI-compatible API
-Model configuration	OpenAIChatCompletionsModel
-Run execution	Controlled via RunConfig
-Async workflow	Runner.run() with asyncio
-Clean output	Extract response using result.output_text
-💡 Summary
-
-Hello Agent provides a clean, minimal starting point to build agentic AI applications.
-By configuring the model provider, instructions, run settings, and optional tools, you can transform a generic LLM into a predictable, task-focused AI assistant ready for real-world workflows.
+Prints the final output from the model.
