@@ -1,37 +1,40 @@
-# 🤖 Agent, Run, and Global Level Examples — Gemini 2.5 Flash
+# 🤖 Gemini 2.5 Flash — Agent Examples
 
-This document explains how to use **Agent Level**, **Run Level**, and **Global Level** settings with the OpenAI Agents SDK using Google Gemini 2.5 Flash.
+This document provides **three examples** demonstrating different ways to define and run agents using the OpenAI Agents SDK with Google Gemini 2.5 Flash.
 
 ---
 
-## 🔹 Agent Level
+## 🔹 Example 1 — Inline Model in Agent
 
-**Definition:** Settings specific to an **individual agent**. Controls personality, creativity, and tool usage.
+**Description:** Define the **LLM model directly inside the Agent**. Useful for quick experiments.
 
-**Examples:**
 ```python
-agent_cold = Agent(
-    name="Cold Agent",
-    instructions="You are a helpful assistant.",
-    model_settings=ModelSettings(temperature=0.1)
+agent = Agent(
+    name="Assistant",
+    instructions="You only respond in haikus.",
+    model=OpenAIChatCompletionsModel(
+        model="gemini-2.5-flash",
+        openai_client=external_client
+    ),
 )
 
-agent_hot = Agent(
-    name="Hot Agent",
-    instructions="You are a helpful assistant.",
-    model_settings=ModelSettings(temperature=1.9)
+result = await Runner.run(
+    agent,
+    "Tell me about recursion in programming."
 )
+print(result.final_output)
 ```
-- Temperature controls creativity (0.0 → 2.0)
-- Each agent can have different behavior.
+
+**Notes:**
+- Model is tied **directly to this agent**.
+- No separate `RunConfig` needed.
 
 ---
 
-## 🔹 Run Level
+## 🔹 Example 2 — Using RunConfig
 
-**Definition:** Settings applied **when executing the agent** via `RunConfig`. Controls model selection, provider, tracing, etc.
+**Description:** Define the model separately and use **RunConfig** during execution.
 
-**Example:**
 ```python
 llm_model = OpenAIChatCompletionsModel(
     model="gemini-2.5-flash",
@@ -43,53 +46,56 @@ run_config = RunConfig(
     model_provider=external_client,
 )
 
-result = await Runner.run(agent_cold, question, run_config=run_config)
+agent = Agent(
+    name="Assistant",
+    instructions="You only respond in haikus."
+)
+
+result = await Runner.run(
+    agent,
+    "Tell me about recursion in programming.",
+    run_config=run_config
+)
+print(result.final_output)
 ```
-- RunConfig allows you to **control execution parameters** per run.
-- Does **not** include temperature or tool_choice.
+
+**Notes:**
+- RunConfig separates **model definition** from **execution settings**.
+- Useful for **advanced setups** or multiple agents sharing the same model.
 
 ---
 
-## 🔹 Global Level
+## 🔹 Example 3 — Using Default Client & API
 
-**Definition:** Settings applied **universally** across all agents and runs. Useful for defaults or shared configurations.
+**Description:** Set global defaults and specify the model by name in the agent.
 
-**Example:**
 ```python
-set_tracing_disabled(disabled=True)
 set_default_openai_api("chat_completions")
 set_default_openai_client(external_client)
+
+agent = Agent(
+    name="Assistant",
+    instructions="You are a helpful assistant",
+    model="gemini-2.5-flash"
+)
+
+result = await Runner.run(agent, "Hello")
+print(result.final_output)
 ```
-- Disables tracing globally.
-- Sets default OpenAI API and client for all agents.
+
+**Notes:**
+- Uses **global defaults** for API and client.
+- Simplifies agent creation by just specifying the model name.
+- Ideal when multiple agents share the same client.
 
 ---
 
-## 🔹 Tool Choice (Agent Level)
+## 🔹 Comparison Table
 
-Controls how agents decide to use attached tools:
+| Example | Model Definition | RunConfig | When to Use |
+|--------|----------------|-----------|------------|
+| 1 | Inline in Agent | Not used | Quick tests, simple setups |
+| 2 | Separate OpenAIChatCompletionsModel | Used | Advanced setups, shared models |
+| 3 | By name with default client | Not used | Multiple agents sharing client |
 
-| Tool Choice | Behavior |
-|------------|---------|
-| auto | Agent decides automatically |
-| required | Agent must use tool if relevant |
-| none | Agent never uses tools |
-
-**Example:**
-```python
-agent_auto = Agent(name="Auto", tools=[calculate_area], model_settings=ModelSettings(tool_choice="auto"))
-agent_required = Agent(name="Required", tools=[calculate_area], model_settings=ModelSettings(tool_choice="required"))
-agent_none = Agent(name="None", tools=[calculate_area], model_settings=ModelSettings(tool_choice="none"))
-```
-- `Auto` → agent decides
-- `Required` → agent must use tool
-- `None` → agent ignores tools
-
----
-
-## 💡 Tips & Recommendations
-
-- **Agent Level:** Always define personality, temperature, and tool usage here.
-- **Run Level:** Control model selection, provider, and execution per run.
-- **Global Level:** Use for defaults like API client, tracing, or logging.
-- Combine these levels to **fine-tune behavior per agent and per execution**.
+💡 **Tip:** Choose based on **complexity** and
