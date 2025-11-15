@@ -1,87 +1,33 @@
-Agent Framework Demo: Gemini via OpenAI API
-This document provides a guide for running a minimal Python example that integrates the Gemini 2.5 Flash model into an agent-based workflow using an OpenAI-compatible API.
+Code Description: Gemini Agent Setup
+This Python script demonstrates a minimal implementation of an AI agent using an agent framework, configured to communicate with the Google Gemini API via an OpenAI-compatible client interface.
 
-This approach allows developers to utilize Google's powerful Gemini models within existing agent frameworks and libraries built for the OpenAI ecosystem.
+1. Environment Setup and Imports
+The script begins by importing necessary libraries for asynchronous operations (asyncio), file system access (os), and managing environment variables (dotenv). It also imports the core components of the agent framework (Agent, Runner, AsyncOpenAI, etc.).
 
-🚀 Getting Started
-Follow these steps to set up and run the example.
+2. LLM Provider Configuration (Gemini via OpenAI Client)
+This is the most crucial step, enabling the use of Gemini with an OpenAI-based library:
 
-Prerequisites
-Python 3.8+
+API Client: An AsyncOpenAI client is initialized.
 
-A Gemini API Key.
+Base URL: The base_url is explicitly set to "https://generativelanguage.googleapis.com/v1beta/openai/". This redirects all standard OpenAI client calls to the Gemini API endpoint.
 
-Installation
-Install the necessary Python packages using pip:
+API Key: The GEMINI_API_KEY is loaded securely from the .env file.
 
-Bash
+3. Model and Run Configuration
+Model: An OpenAIChatCompletionsModel is defined, specifying the use of the gemini-2.5-flash model.
 
-pip install python-dotenv openai [your_agent_framework]
-Note: Replace [your_agent_framework] with the actual package providing Agent, Runner, etc.
+Run Config: A RunConfig object bundles the model and provider settings for the execution environment.
 
-📝 Environment Variables
-Create a file named .env in the project root and set your API key:
+4. Agent Definition
+An Agent named "Assistant" is created with clear instructions defining its persona and conditional tool-use logic:
 
-# .env file
-GEMINI_API_KEY="your_api_key_here"
-Security Warning: Never commit your .env file or API keys directly to GitHub.
+Persona: "You are a helpful assistant to answer the questions."
 
-Running the Program
-Save your Python code as main.py and execute the script:
+Tool Use: "But if user asks about weather, use the get_weather tool." (This establishes the structure for function calling, even if the tool is not defined in the snippet.)
 
-Bash
+5. Execution
+The asynchronous main function executes the agent's task:
 
-python main.py
-Expected Output:
+Runner: The Runner.run method is called, passing the agent, the input prompt ("Hello, how are you?"), and the run_config.
 
-I'm doing great, thank you for asking! How can I help you today?
-🔑 Key Components
-The core integration is achieved by configuring the client to redirect to the Gemini API endpoint.
-
-1. Model Provider (external_client)
-This defines the external LLM provider. We use the standard AsyncOpenAI client but point it to the Gemini gateway URL.
-
-Example:
-
-Python
-
-external_client = AsyncOpenAI(
-    api_key=os.getenv("GEMINI_API_KEY"),
-    base_url="https://generativelanguage.googleapis.com/v1beta/openai/"
-)
-Supported Providers: Gemini via OpenAI-compatible API.
-
-2. Model Definition (llm_model)
-This specifies which Gemini model to use.
-
-Example:
-
-Python
-
-llm_model = OpenAIChatCompletionsModel(
-    model="gemini-2.5-flash",
-    openai_client=external_client
-)
-3. Agent Instructions
-The Agent is given a defined role and conditional tool use instructions.
-
-Instructions:
-
-"You are a helpful assistant to answer the questions. But if user asks about weather, use the get_weather tool."
-
-💡 Summary of Code Flow
-The Python script executes the workflow in these sequential steps:
-
-Loads environment variables (dotenv).
-
-Initializes the AsyncOpenAI client pointing to the Gemini base URL.
-
-Defines the gemini-2.5-flash model configuration.
-
-Sets up the RunConfig.
-
-Creates the Agent with its defined instructions.
-
-Runs the agent using Runner.run with the initial prompt ("Hello, how are you?").
-
-Prints the final output from the model.
+Output: The model's final response is extracted and printed to the console.
