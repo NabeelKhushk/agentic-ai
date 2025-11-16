@@ -1,4 +1,5 @@
-# 🤖 Agentic AI Demo — AsyncOpenAI + Gemini (OpenAI-Compatible)
+# 🤖 Agentic AI Demo — Context-Aware Async Agent using Gemini 2.5-Flash
+
 
 This project demonstrates how to run an **Agent** using the **OpenAI Agents SDK** while calling the **Gemini API (OpenAI-compatible endpoint)**.
 
