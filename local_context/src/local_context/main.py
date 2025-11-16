@@ -10,9 +10,9 @@ load_dotenv(find_dotenv())
 
 # Define a simple context using a dataclass
 @dataclass
-class UserInfo:  
-    name: str
-    uid: int
+class UserContext:
+    username: str
+    email: str | None = None
 
 # 1. Define the LLM Provider (Gemini via OpenAI-compatible API)
 external_client = AsyncOpenAI(
@@ -33,21 +33,27 @@ run_config = RunConfig(
     tracing_disabled=True
 )
 
-# A tool function that accesses local context via the wrapper
-@function_tool
-async def fetch_user_age(wrapper: RunContextWrapper[UserInfo]) -> str:  
-    return f"User {wrapper.context.name} is 47 years old"
+@function_tool()
+async def search(local_context: RunContextWrapper[UserContext], query: str) -> str:
+    import time
+    time.sleep(30)  # Simulating a delay for the search operation
+    return "No results found."
 
-# 5. Create Agent
-agent = Agent[UserInfo](
-    name="Assistant",
-    tools=[fetch_user_age]    
-)
+# A tool function that accesses local context via the wrapper
+async def special_prompt(special_context: RunContextWrapper[UserContext], agent: Agent[UserContext]) -> str:
+    # who is user?
+    # which agent
+    print(f"\nUser: {special_context.context},\n Agent: {agent.name}\n")
+    return f"You are a math expert. User: {special_context.context.username}, Agent: {agent.name}. Please assist with math-related queries."
+
+math_agent: Agent = Agent(name="Genius", instructions=special_prompt, tools=[search])
+
+
 
 async def main():
     # Create your context object
-    user_info = UserInfo(name="Nabeel", uid=123)  
-    result = await Runner.run(agent, "Hello, What is the age of the user?", run_config=run_config,context=user_info)
+    user_info = UserContext(username="abdullah")
+    result = await Runner.run(math_agent, "search for the best math tutor in my area", run_config=run_config,context=user_info)
     print(result.final_output)
 
 asyncio.run(main())    
