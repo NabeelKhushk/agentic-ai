@@ -1,0 +1,19 @@
+[project]
+name = "11-advanced-tool"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "NabeelKhushk", email = "62885321+NabeelKhushk@users.noreply.github.com" }
+]
+requires-python = ">=3.11"
+dependencies = [
+    "openai-agents>=0.6.1",
+]
+
+[project.scripts]
+11-advanced-tool = "11_advanced_tool:main"
+
+[build-system]
+requires = ["uv_build>=0.9.8,<0.10.0"]
+build-backend = "uv_build"
